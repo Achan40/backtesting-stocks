@@ -62,8 +62,6 @@ class Stock:
         else:
             self.num_nothing_to_sell += 1
 
-    
-
     # final values and percentage calculations
     def get_finals(self):
         stock_initial_value = self.prices["close"].iloc[0]
@@ -96,8 +94,6 @@ class Stock:
                 self.__buy_stock(self.prices["close"][i])
         self.get_finals()
         self.get_totals()
-        
-        
 
 def main():
     AAPL = Stock("AAPL", 10000)
