@@ -15,9 +15,8 @@ def get_change(final, initial):
         except ZeroDivisionError:
             return 0
 
-# Stock object, requires a symbol to be created
+# Account object, requires some amount of starting cash, the timeframe for the backtest, and a single symbol
 class Account:
-    # Constructor, requires some amount of starting cash, the timeframe for the backtest, and a list of symbols
     def __init__(self, starting_cash, timeframe, symbol):
         self.acc_cash_initial = starting_cash
         self.acc_cash = starting_cash
