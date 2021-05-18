@@ -6,6 +6,15 @@ import pandas as pd
 import requests
 import json
 
+# percent change helper function
+def get_change(final, initial):
+        if final == initial:
+            return 100.0
+        try:
+            return (abs(final - initial) / initial) * 100.0
+        except ZeroDivisionError:
+            return 0
+
 # Account object, requires some amount of starting cash, the timeframe for the backtest, and a vector of Stock objects
 class Account:
     def __init__(self, starting_cash, bundle):
@@ -30,6 +39,7 @@ class Account:
             self.num_sells += 1
         else:
             self.num_nothing_to_sell += 1
+    
 
 # Properties of a single stock
 class Stock:
@@ -55,6 +65,15 @@ class Stock:
         self.prices = pd.DataFrame(prices_obj)
         return self.prices
 
+    def get_finals(self):
+        stock_initial_value = self.prices["close"].iloc[0]
+        stock_final_value = self.prices["close"].iloc[-1]
+        delta = get_change(stock_final_value, stock_initial_value)
+        print("Change: " + str(delta) + "%")
+        print("Timeframe: " + self.timeframe)
+        
+
+
 # helper function to create an array of Stock objects
 def bundle(list_of_symbols, timeframe):
     multi = []
@@ -64,8 +83,10 @@ def bundle(list_of_symbols, timeframe):
 
 def main():
     multi = bundle(['AAPL', 'PLTR', 'AMZN'], '2y')
+    mkt = Stock('SPY', '2y')
     Acc = Account(10000, multi)
     print(Acc.bundle[1].prices["close"][1])
+    mkt.get_finals()
 
 
 if __name__ == "__main__":
