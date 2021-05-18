@@ -103,8 +103,6 @@ class Account:
 
 def main():
     AAPL = Account(10000,"5y","AAPL")
-    AAPL.get_df_prices()
-    print(AAPL.prices)
     AAPL.backtest1()
 
 if __name__ == "__main__":

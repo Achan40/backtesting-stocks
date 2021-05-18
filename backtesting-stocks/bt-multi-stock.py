@@ -65,7 +65,7 @@ def bundle(list_of_symbols, timeframe):
 def main():
     multi = bundle(['AAPL', 'PLTR', 'AMZN'], '2y')
     Acc = Account(10000, multi)
-    print(Acc.multi[1].prices)
+    print(Acc.bundle[1].prices["close"][1])
 
 
 if __name__ == "__main__":
