@@ -21,6 +21,8 @@ class Account:
         self.acc_cash_initial = starting_cash
         self.acc_cash = starting_cash
         self.bundle = bundle
+        self.acc_total_val = 0
+
 
     # buy a single share of stock
     def __buy_stock(self, stockval):
@@ -39,6 +41,12 @@ class Account:
             self.num_sells += 1
         else:
             self.num_nothing_to_sell += 1
+    
+    def get_finals(self):
+        delta = get_change(self.acc_total_val, self.acc_cash_initial)
+        print("Account")
+        print("Change: " + str(delta) + "%")
+        print("Timeframe: " + self.timeframe + "\n")
     
 
 # Properties of a single stock
@@ -69,8 +77,9 @@ class Stock:
         stock_initial_value = self.prices["close"].iloc[0]
         stock_final_value = self.prices["close"].iloc[-1]
         delta = get_change(stock_final_value, stock_initial_value)
+        print(self.symbol)
         print("Change: " + str(delta) + "%")
-        print("Timeframe: " + self.timeframe)
+        print("Timeframe: " + self.timeframe + "\n")
         
 
 
@@ -85,9 +94,9 @@ def main():
     multi = bundle(['AAPL', 'PLTR', 'AMZN'], '2y')
     mkt = Stock('SPY', '2y')
     Acc = Account(10000, multi)
-    print(Acc.bundle[1].prices["close"][1])
-    mkt.get_finals()
 
+    mkt.get_finals()
+    print(Acc.bundle[1].prices["close"][1])
 
 if __name__ == "__main__":
     main()
