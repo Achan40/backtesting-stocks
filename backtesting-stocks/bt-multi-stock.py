@@ -22,53 +22,15 @@ def bundle(list_of_symbols, timeframe):
         multi.append(Stock(i, timeframe))
     return multi
 
-# Account object, requires some amount of starting cash, the timeframe for the backtest, and a vector of Stock objects
-class Account:
-    def __init__(self, starting_cash, bundle):
-        self.acc_cash_initial = starting_cash
-        self.acc_cash = starting_cash
-        self.bundle = bundle
-        self.acc_total_val = 0
-
-    # buy a single share of stock. Takes in a Stock object
-    def __buy_stock(self, stock_obj, stock_val):
-        if(self.acc_cash > stock_val):
-            self.acc_cash = self.acc_cash - stock_val
-            stock_obj.num_held += 1
-        else:
-            print('Out of Cash')
-
-    # sell a single share of stock
-    def __sell_stock(self, stock_obj, stock_val):
-        if(stock_obj.num_held > 0):
-            stock_obj.num_held -= 1
-            self.acc_cash = self.acc_cash + stock_val
-        else:
-            print('No availble shares to sell')
-
-    # calculate final account value
-    def get_acc_total_val(self):
-        for i in range(0,len(self.bundle)):
-            # the total value of the account is the current total value of the account plus remaining cash plus the number of shares held of a stock times the last price of the stock
-            self.acc_total_val = self.acc_total_val + self.acc_cash + self.bundle[i].num_held * self.bundle[i].prices['close'].iloc[-1]
-
-    
-    # Get the rate of return any other final values for an account
-    def get_finals(self):
-        delta = get_change(self.acc_total_val, self.acc_cash_initial)
-        print("Account")
-        print("Change: " + str(delta) + "%")
-        # Use timeframe from first stock object in the bundle of stocks (the timeframe is the same for all items in the bundle)
-        print("Timeframe: " + self.bundle[0].timeframe + "\n")
-    
-
 # Properties of a single stock
 class Stock:
+    # Needs a stock symbol, and the timeframe for the backtest (data gathered from some n to the current date)
     def __init__(self, symbol, timeframe):
         self.symbol = symbol
         self.timeframe = timeframe
         self.num_held = 0
         self.get_df_prices()
+        self.num_rows = self.prices.shape[0]
 
     # method returns a dataframe of stock prices for that symbol 
     def get_df_prices(self):
@@ -94,7 +56,57 @@ class Stock:
         print(self.symbol)
         print("Change: " + str(delta) + "%")
         print("Timeframe: " + self.timeframe + "\n")
-        
+
+# Account object, requires some amount of starting cash and a vector of Stock objects
+class Account:
+    def __init__(self, starting_cash, bundle):
+        self.acc_cash_initial = starting_cash
+        self.acc_cash = starting_cash
+        self.bundle = bundle
+        self.acc_total_val = 0
+
+    # buy a single share of stock
+    def __buy_stock(self, stock_obj, stock_val):
+        if(self.acc_cash > stock_val):
+            self.acc_cash = self.acc_cash - stock_val
+            stock_obj.num_held += 1
+        else:
+            print('Out of Cash')
+
+    # sell a single share of stock
+    def __sell_stock(self, stock_obj, stock_val):
+        if(stock_obj.num_held > 0):
+            stock_obj.num_held -= 1
+            self.acc_cash = self.acc_cash + stock_val
+        else:
+            print('No availble shares to sell')
+
+    # calculate final account value
+    def __get_acc_total_val(self):
+        for i in range(0,len(self.bundle)):
+            # the total value of the account is the current total value of the account plus remaining cash plus the number of shares held of a stock times the last price of the stock
+            self.acc_total_val = self.acc_total_val + self.acc_cash + self.bundle[i].num_held * self.bundle[i].prices['close'].iloc[-1]
+    
+    # Get the rate of return any other final values for an account
+    def get_finals(self):
+        delta = get_change(self.acc_total_val, self.acc_cash_initial)
+        print("Account")
+        print("Change: " + str(delta) + "%")
+        # Use timeframe from first stock object in the bundle of stocks (the timeframe is the same for all items in the bundle)
+        print("Timeframe: " + self.bundle[0].timeframe + "\n")
+
+    # Find the largest index out off all of the stocks selected (needed if a selected stock has less data points than the others)
+    def __max_rows(self):
+        x = []
+        for i in range(0, len(self.bundle)):
+            x.append(self.bundle[i].num_rows)
+        return max(x)
+
+    # First backtesting algorithm
+    def bt1(self):
+        max_ind = self.__max_rows()
+        for i in range(0, max_ind):
+            print(i)
 
 def main():
     # Create a list of stocks we want to use in the backtest, and how far back we want to backtest from the current date
@@ -106,7 +118,9 @@ def main():
 
     mkt.get_finals()
     Acc.get_finals()
+    Acc.bt1()
     print(Acc.bundle[1].prices['close'][1])
+    
 
 if __name__ == "__main__":
     main()
