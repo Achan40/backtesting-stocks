@@ -26,11 +26,19 @@ def bundle(list_of_symbols, timeframe):
 class Stock:
     # Needs a stock symbol, and the timeframe for the backtest (data gathered from some n to the current date)
     def __init__(self, symbol, timeframe):
+        # Stock symbol
         self.symbol = symbol
+        # Length of time for the backtest of the stock
         self.timeframe = timeframe
+        # number of shares held
         self.num_held = 0
+        # Dataframe of historical stock prices
         self.get_df_prices()
+        # Total number of rows of the df
         self.num_rows = self.prices.shape[0]
+        # Variables for iterating
+        self.starting_ind = 0
+        self.current_ind = 0
 
     # method returns a dataframe of stock prices for that symbol 
     def get_df_prices(self):
@@ -60,10 +68,14 @@ class Stock:
 # Account object, requires some amount of starting cash and a vector of Stock objects
 class Account:
     def __init__(self, starting_cash, bundle):
+        # Cash values of the account
         self.acc_cash_initial = starting_cash
         self.acc_cash = starting_cash
+        # List of individual Stock objects
         self.bundle = bundle
         self.acc_total_val = 0
+        # Index of longest df
+        self.max_ind = self.__max_ind()
 
     # buy a single share of stock
     def __buy_stock(self, stock_obj, stock_val):
@@ -95,18 +107,33 @@ class Account:
         # Use timeframe from first stock object in the bundle of stocks (the timeframe is the same for all items in the bundle)
         print("Timeframe: " + self.bundle[0].timeframe + "\n")
 
-    # Find the largest index out off all of the stocks selected (needed if a selected stock has less data points than the others)
-    def __max_rows(self):
+    # Find the largest index out off all of the stocks selected (needed if a selected stock in our bundle has less data points than the others)
+    def __max_ind(self):
         x = []
         for i in range(0, len(self.bundle)):
             x.append(self.bundle[i].num_rows)
         return max(x)
 
+    # Set the starting index for each stock in the bundle.
+    # Historical data gathered from IEX starts with the least recent data from a specified date and end with the most recent.
+    # Therefore, if we have different lengths in our dataframe for certain stocks, we will need to adjust the algorithm.
+    def __set_start(self):
+        for i in range(0, len(self.bundle)):
+            self.bundle[i].starting_ind = self.max_ind - self.bundle[i].num_rows
+
     # First backtesting algorithm
     def bt1(self):
-        max_ind = self.__max_rows()
-        for i in range(0, max_ind):
-            print(i)
+        self.__set_start()
+        for i in range(0, self.max_ind):
+            for j in range(0, len(self.bundle)):
+                # Algorithm begins when data is available for a certain stock.
+                # For example, if a stocks data is only available for the past 2yrs, while another
+                # stocks data has been available for 5yrs, we have to account for that.
+                if self.bundle[j].starting_ind > i:
+                    print("Skip")
+                else:
+                    print(self.bundle[j].prices["close"][self.bundle[j].current_ind])
+                    self.bundle[j].current_ind += 1
 
 def main():
     # Create a list of stocks we want to use in the backtest, and how far back we want to backtest from the current date
@@ -119,7 +146,6 @@ def main():
     mkt.get_finals()
     Acc.get_finals()
     Acc.bt1()
-    print(Acc.bundle[1].prices['close'][1])
     
 
 if __name__ == "__main__":
