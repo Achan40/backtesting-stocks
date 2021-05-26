@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Ignore API keys
-sandbox-secret.py
+sandbox.py
 secret.py

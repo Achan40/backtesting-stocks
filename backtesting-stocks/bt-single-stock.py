@@ -92,7 +92,7 @@ class Account:
             pdelta = self.prices["changePercent"][i]
             if(pdelta > .05):
                 nsells = int(pdelta/.05)
-                for j in range(0,nsells):
+                for k in range(0,nsells):
                     self.__sell_stock(self.prices["close"][i])
             if(pdelta < -.01):
                 nbuys = int(pdelta/-.01)
