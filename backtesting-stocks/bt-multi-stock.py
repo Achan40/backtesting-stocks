@@ -83,7 +83,7 @@ class Account:
             self.acc_cash = self.acc_cash - stock_val
             stock_obj.num_held += 1
         else:
-            print('Out of Cash')
+            None
 
     # sell a single share of stock
     def __sell_stock(self, stock_obj, stock_val):
@@ -91,7 +91,7 @@ class Account:
             stock_obj.num_held -= 1
             self.acc_cash = self.acc_cash + stock_val
         else:
-            print('No availble shares to sell')
+            None
 
     # calculate final account value
     def __set_acc_total_val(self):
