@@ -9,7 +9,7 @@ import json
 # percent change helper function
 def get_change(final, initial):
         if final == initial:
-            return 100.0
+            return 0
         try:
             return ((final - initial) / initial) * 100.0
         except ZeroDivisionError:
@@ -94,11 +94,13 @@ class Account:
             print('No availble shares to sell')
 
     # calculate final account value
-    def __get_acc_total_val(self):
+    def __set_acc_total_val(self):
         for i in range(0,len(self.bundle)):
-            # the total value of the account is the current total value of the account plus remaining cash plus the number of shares held of a stock times the last price of the stock
-            self.acc_total_val = self.acc_total_val + self.acc_cash + self.bundle[i].num_held * self.bundle[i].prices['close'].iloc[-1]
-    
+            # the total value of the account is the current total value of the account plus the number of shares held of a stock times the last price of the stock
+            self.acc_total_val = self.acc_total_val + self.bundle[i].num_held * self.bundle[i].prices['close'].iloc[-1]
+        # add remaining cash to total
+        self.acc_total_val = self.acc_total_val + self.acc_cash
+
     # Get the rate of return any other final values for an account
     def get_finals(self):
         delta = get_change(self.acc_total_val, self.acc_cash_initial)
@@ -130,10 +132,20 @@ class Account:
                 # For example, if a stocks data is only available for the past 2yrs, while another
                 # stocks data has been available for 5yrs, we have to account for that.
                 if self.bundle[j].starting_ind > i:
-                    print("Skip")
+                    None
                 else:
-                    print(self.bundle[j].prices["close"][self.bundle[j].current_ind])
+                    # Simple backtesting algorithm, adjust number or buys or sells depending on the percentage of the price change of a certain stocks
+                    pdelta = self.bundle[j].prices["changePercent"][self.bundle[j].current_ind]
+                    if(pdelta > .05):
+                        nsells = int(pdelta/.05)
+                        for k in range(0,nsells):
+                            self.__sell_stock(self.bundle[j], self.bundle[j].prices["close"][self.bundle[j].current_ind])
+                    if(pdelta < -.01):
+                        nbuys = int(pdelta/-.01)
+                        for k in range(0, nbuys):
+                            self.__buy_stock(self.bundle[j], self.bundle[j].prices["close"][self.bundle[j].current_ind])
                     self.bundle[j].current_ind += 1
+        self.__set_acc_total_val()
 
 def main():
     # Create a list of stocks we want to use in the backtest, and how far back we want to backtest from the current date
@@ -143,10 +155,9 @@ def main():
     # Create an account object with an initial starting dollar value, and the bundle of stocks we are backtesting with
     Acc = Account(10000, multi)
 
+    Acc.bt1()
     mkt.get_finals()
     Acc.get_finals()
-    Acc.bt1()
-    
 
 if __name__ == "__main__":
     main()
